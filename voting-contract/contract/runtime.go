@@ -464,7 +464,7 @@ func SubscribeSmartContract(contractToken string, port string) {
 		fmt.Println("Error marshaling JSON:", err)
 		return
 	}
-	url := fmt.Sprintf("http://localhost:%s/api/subscribe-contract", port)
+	url := fmt.Sprintf("http://localhost:%s/api/subscribe-smart-contract", port)
 	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bodyJSON))
 	if err != nil {
 		fmt.Println("Error creating HTTP request:", err)
