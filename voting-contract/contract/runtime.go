@@ -456,8 +456,9 @@ func ExecuteSmartContract(comment string, executorAddress string, quorumType int
 }
 
 func SubscribeSmartContract(contractToken string, port string) {
+	fmt.Println(contractToken)
 	data := map[string]interface{}{
-		"contract": contractToken,
+		"smartContractToken": contractToken,
 	}
 	bodyJSON, err := json.Marshal(data)
 	if err != nil {

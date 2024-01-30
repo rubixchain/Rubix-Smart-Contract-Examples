@@ -14,17 +14,17 @@ func GenerateSmartContract() {
 		This did, wasmPath, schemaPath, rawcodePath and Port should be replaced according to your Rubix node configuration and
 		the respective paths
 	*/
-	did := "bafybmifb4rbwykckpbcnekcha23nckrldhkcqyrhegl7oz44njgci5vhqa"
+	did := "bafybmid5yd3obfpcximuaoe37a564ycpzdpxqy5o7ephu3m5fsug2wqgyy"
 	wasmPath := "voting_contract/target/wasm32-unknown-unknown/release/voting_contract.wasm"
 	schemaPath := "store_state/vote_contract/votefile.json"
 	rawCodePath := "voting_contract/src/lib.rs"
-	port := "20002"
+	port := "20016"
 	contract.GenerateSmartContract(did, wasmPath, schemaPath, rawCodePath, port)
 }
 
 // This function is intended to pass the smart contract hash which is retruned while generating smart contract
 func smartContractHash() string {
-	return "QmVw2GYCC9DnyDuRmMqBYgjHQJCqx5GnU6RTSMi1Jf4Qa4"
+	return "QmfSEMA6f9aqZa5cfQmXXfmHDogfpyEpjPxKoWcYSv5xSj"
 }
 
 func DeploySmartContract() {
@@ -33,11 +33,11 @@ func DeploySmartContract() {
 		port : The port corresponding to the deployer node.
 	*/
 	comment := "Deploying Test Voting Contract"
-	deployerAddress := "12D3KooWCR4BW7gfPmCZhAJusqv1PoS49jgqTGvofcG4WPyg8FxV.bafybmifb4rbwykckpbcnekcha23nckrldhkcqyrhegl7oz44njgci5vhqa"
+	deployerAddress := "12D3KooWKdMPfF58y5mndzXhz9dp92QgWjo82s9oWfsJAZRkw7zY.bafybmid5yd3obfpcximuaoe37a564ycpzdpxqy5o7ephu3m5fsug2wqgyy"
 	quorumType := 2
 	rbtAmount := 1
 	smartContractToken := smartContractHash()
-	port := "20002"
+	port := "20016"
 	id := contract.DeploySmartContract(comment, deployerAddress, quorumType, rbtAmount, smartContractToken, port)
 	fmt.Println("Contract ID: " + id)
 	contract.SignatureResponse(id, port)
@@ -50,11 +50,11 @@ func ExecuteSmartContractNode1() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on Node1"
-	executorAddress := "12D3KooWPfPgt1zZeQ2WcA6JGUB5u8bLNk8dPtYKiJ3MJQoeKtu7.bafybmigka7xjp73j2oy256xsmyfd66gjv6fi3ybfyjghshij4idnxui6ea"
+	executorAddress := "12D3KooWEP8wPaUGofjRSQRfc6fXaEXuwSAUnx7G7omdcZrAfJ5B.bafybmigbwhqopv5gr6i22dqhryg35kvlvokn7nxlss4nnzdprfpgxnxsga"
 	quorumType := 2
 	smartContractData := "Red"
 	smartContractToken := smartContractHash()
-	port := "20009"
+	port := "20014"
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
 }
 
@@ -64,11 +64,11 @@ func ExecuteSmartContractNode2() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on Node2"
-	executorAddress := "12D3KooWMQaGLNGof8AfoUQh6a7aDRS2JpjkYyUrn2nzcX5bqMko.bafybmigipihqh5smgeyokgqvh7nd3yki6epaxfbefa3jxf5msw7ltj7ujm"
+	executorAddress := "12D3KooWBnryPQk82qvK6it4aTUqcGhk13YkxKFZejkEpgpAG9X6.bafybmidmdayavtdzolasw3wye7laese6m2fi3mcfa5o3cfkedtpe6utklq"
 	quorumType := 2
 	smartContractData := "Blue"
 	smartContractToken := smartContractHash()
-	port := "20010"
+	port := "20015"
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
 }
 
@@ -78,11 +78,11 @@ func ExecuteSmartContractNode3() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on Node3"
-	executorAddress := "12D3KooWMQuGUzoWq5EgdhBQ6YdqTQKmxpSP5s5sKyTRMsxDe1f6.bafybmidxxslkym52zhywijju54hdhvybjuf5uhj3ugcfpdr6vwko25mlma"
+	executorAddress := "12D3KooWGMbtc77iZs5Aw59vg97M6teTmLam9wyWCfti7ybo2ZdD.bafybmiejhevgpzgbxqugjl7w7mrrhafefvvolel7jfshbybtgazdqych2u"
 	quorumType := 2
 	smartContractData := "Red"
 	smartContractToken := smartContractHash()
-	port := "20011"
+	port := "20017"
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
 }
 
@@ -130,13 +130,13 @@ func main() {
 			GenerateSmartContract()
 		case "2":
 			fmt.Println("Subscribing Smart Contract in Node 1")
-			SubscribeSmartContractNode1("20009")
+			SubscribeSmartContractNode1("20014")
 		case "3":
 			fmt.Println("Subscribing Smart Contract in Node 2")
-			SubscribeSmartContractNode2("20010")
+			SubscribeSmartContractNode2("20015")
 		case "4":
 			fmt.Println("Subscribing Smart Contract in Node 3")
-			SubscribeSmartContractNode3("20011")
+			SubscribeSmartContractNode3("20017")
 		case "5":
 			fmt.Println("Deploying Smart Contract")
 			DeploySmartContract()
