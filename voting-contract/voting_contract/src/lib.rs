@@ -2,6 +2,8 @@
 extern "C" {
     fn load_input(pointer: *mut u8);
     fn dump_output(pointer: *const u8, redvote: u32 , bluevote: u32 , block_no: u32, port_length: usize, hash_length: usize);
+    fn initiate_transfer();
+    
 }
 
 #[no_mangle]
@@ -10,6 +12,7 @@ pub extern "C" fn handler(input_vote_length: usize , red_length: usize , blue_le
     let mut input = Vec::with_capacity(input_vote_length + red_length + blue_length + port_length + hash_length + block_no_length);
     let mut output_vec:Vec<u8> = Vec::new();
     unsafe {
+        initiate_transfer();
         load_input(input.as_mut_ptr());
         input.set_len(input_vote_length + red_length + blue_length + port_length + hash_length + block_no_length);
     

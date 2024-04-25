@@ -62,8 +62,8 @@ func (r *WasmtimeRuntime) Init(wasmFile string) {
 	r.store.SetWasi(wasiConfig)
 	linker.FuncWrap("env", "load_input", r.loadInput)
 	linker.FuncWrap("env", "dump_output", r.dumpOutput)
-	// linker.FuncWrap("env", "get_account_info", r.getAccountInfo)
-	// linker.FuncWrap("env", "initiate_transfer", r.InitiateTransaction)
+	//linker.FuncWrap("env", "get_account_info", r.getAccountInfo)
+	linker.FuncWrap("env", "initiate_transfer", r.InitiateTransaction)
 	wasmBytes, err := os.ReadFile(wasmFile)
 	if err != nil {
 		panic(fmt.Errorf("failed to read file: %v", err))
@@ -135,9 +135,10 @@ func (r *WasmtimeRuntime) Init(wasmFile string) {
 // }
 
 func (r *WasmtimeRuntime) InitiateTransaction() {
-	port := "20002"
-	receiver := "12D3KooWSokjA3JcWZNJUz4B6mN7tYBH75bSSGoxQwqJ1kTBSvgM.bafybmiegyiz5zvnveqx3lc3cealx3zfwiclwpntaf3ep3zm2slexbzj33u"
-	sender := "12D3KooWCR4BW7gfPmCZhAJusqv1PoS49jgqTGvofcG4WPyg8FxV.bafybmifb4rbwykckpbcnekcha23nckrldhkcqyrhegl7oz44njgci5vhqa"
+	fmt.Println("Initiate Transaction called")
+	port := "20003"
+	receiver := "12D3KooWKQbP3kdBWcRMNQcWP7iYEv8oT5coxoYKnyWBUA8A9PdP.bafybmibbbtdsdrv2jpjt5fkozmsjyzsircsozvmwvn6f666eyw2gkoguqe"
+	sender := "12D3KooWA9rYqCRfniLJxyMSxLq9FcNHLg9NUApPPhafiQ76enpX.bafybmibzmgude7driixpb2hihrveiwzkvrhsogs7xzijv7zbys7qnuakvy"
 	tokenCount := 1
 	comment := "Wasm Test"
 
@@ -215,7 +216,7 @@ func (r *WasmtimeRuntime) dumpOutput(pointer int32, red int32, blue int32, block
 	// smartContractHash := string(r.output[port_length : p])
 	fmt.Println("Smart Contract Hash in Dump Output :", smartContracthash)
 	nodeName := os.Getenv(port)
-	stateFilePath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/schemaCodeFile.json", nodeName, smartContracthash)
+	stateFilePath := fmt.Sprintf("/mnt/c/Users/allen/Working-repo/test-setup/%s/SmartContract/%s/schemaCodeFile.json", nodeName, smartContracthash)
 
 	count := Count{}
 	count.Red = int32(red)
@@ -575,7 +576,7 @@ func ReadCurrentState(stateFilePath string) string {
 }
 
 func GetRubixSmartContractPath(contractHash string, smartContractName string, nodeName string) (string, error) {
-	rubixcontractPath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/%s", nodeName, contractHash, smartContractName)
+	rubixcontractPath := fmt.Sprintf("/mnt/c/Users/allen/Working-repo/test-setup/%s/SmartContract/%s/%s", nodeName, contractHash, smartContractName)
 
 	// Check if the path exists
 	if _, err := os.Stat(rubixcontractPath); err != nil {
@@ -589,7 +590,7 @@ func GetRubixSmartContractPath(contractHash string, smartContractName string, no
 }
 
 func GetRubixSchemaPath(contractHash string, nodeName string, schemaName string) (string, error) {
-	rubixSchemaPath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/%s", nodeName, contractHash, schemaName)
+	rubixSchemaPath := fmt.Sprintf("/mnt/c/Users/allen/Working-repo/test-setup/%s/SmartContract/%s/%s", nodeName, contractHash, schemaName)
 
 	// Check if the path exists
 	if _, err := os.Stat(rubixSchemaPath); err != nil {
