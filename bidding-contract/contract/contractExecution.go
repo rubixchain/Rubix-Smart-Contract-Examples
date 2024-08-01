@@ -42,8 +42,8 @@ func NewContractExecution(contractId string, port string) (*ContractExecution, e
 	fmt.Println("Contract ID", contractId)
 	path := os.Getenv(port) + "SmartContract/"
 	c := &ContractExecution{
-		wasmPath:  fmt.Sprintf(path+"%s/bidding_contract.wasm", contractId),
-		stateFile: fmt.Sprintf(path+"%s/bidding_contract.json", contractId),
+		wasmPath:  fmt.Sprintf(path+"%s/binaryCodeFile.wasm", contractId),
+		stateFile: fmt.Sprintf(path+"%s/schemaCodeFile.json", contractId),
 	}
 	fmt.Println("Path is ", path)
 	fmt.Println("ContractExecution:", c)
@@ -80,7 +80,7 @@ func NewContractExecution(contractId string, port string) (*ContractExecution, e
 	return c, nil
 }
 
-func (c *ContractExecution) write(str string) int {
+func (c *ContractExecution) write(str []byte) int {
 	if !c.initialised {
 		panic("Contract not initialised")
 	}
@@ -94,7 +94,7 @@ func (c *ContractExecution) write(str string) int {
 
 	copy(
 		c.memory.UnsafeData(c.store)[ptr:],
-		[]byte(str),
+		str,
 	)
 
 	c.pointerPosition += len(str) + 1
@@ -139,19 +139,19 @@ func (c *ContractExecution) ReadStateFile() string {
 	return string(file)
 }
 
-func (c *ContractExecution) apply_state() {
-	if !c.initialised {
-		panic("Contract not initialised")
-	}
+// func (c *ContractExecution) apply_state() {
+// 	if !c.initialised {
+// 		panic("Contract not initialised")
+// 	}
 
-	state := c.ReadStateFile()
-	if state != "" {
-		pointer := c.write(state)
-		c.instance.GetExport(c.store, "apply_state").Func().Call(c.store, pointer)
-	}
-}
+// 	state := c.ReadStateFile()
+// 	if state != "" {
+// 		pointer := c.write(state)
+// 		c.instance.GetExport(c.store, "apply_state").Func().Call(c.store, pointer)
+// 	}
+// }
 
-func (c *ContractExecution) ProcessActions(actions []Action, jsonStr string) {
+func (c *ContractExecution) ProcessActions(actions []Action, jsonStr []byte) {
 	if !c.initialised {
 		panic("Contract not initialised")
 	}

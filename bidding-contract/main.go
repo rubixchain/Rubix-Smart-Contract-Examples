@@ -26,7 +26,7 @@ type BasicResponse struct {
 type SCTDataReply struct {
 	BlockNo           uint64
 	BlockId           string
-	SmartContractData string
+	SmartContractData []byte
 }
 
 func GenerateSmartContract() {
@@ -34,17 +34,17 @@ func GenerateSmartContract() {
 		This did, wasmPath, schemaPath, rawcodePath and Port should be replaced according to your Rubix node configuration and
 		the respective paths
 	*/
-	did := "bafybmid23tc2ddfsmxbb5h26cyiljkylbp7fjsgpbucxlm43vzbm5p2b7y"
-	wasmPath := "./data/contracts/bidding_contract.wasm"
+	did := "bafybmibpgv4fe4xr7wwolrymxfphe7o45r4mynnzam6ohqqzvh3usmue2e"
+	wasmPath := "./bidding_contract/target/wasm32-unknown-unknown/debug/bidding_contract.wasm"
 	schemaPath := "./data/state/bidding_contract.json"
-	rawCodePath := "./data/raw-code/lib.rs"
-	port := "20002"
+	rawCodePath := "./bidding_contract/src/lib.rs"
+	port := "20009"
 	contract.GenerateSmartContract(did, wasmPath, schemaPath, rawCodePath, port)
 }
 
 // This function is intended to pass the smart contract hash which is retruned while generating smart contract
 func smartContractHash() string {
-	return "QmYsAL5cQpXB6zSLyJKoJcedBofMsYwFpUajbXJ3JWwqy9"
+	return "QmcmWCPV7AsZu1TMEtydpgLYNH5Cmf3qYxVAaF9obucrGE"
 }
 
 func DeploySmartContract() {
@@ -53,11 +53,11 @@ func DeploySmartContract() {
 		port : The port corresponding to the deployer node.
 	*/
 	comment := "Deploying Test Bidding Contract"
-	deployerAddress := "12D3KooWQK7SKtBo91gesKpe71gWAJQqsKvM1JLAsDTe8fBC6hFZ.bafybmid23tc2ddfsmxbb5h26cyiljkylbp7fjsgpbucxlm43vzbm5p2b7y"
+	deployerAddress := "bafybmibpgv4fe4xr7wwolrymxfphe7o45r4mynnzam6ohqqzvh3usmue2e"
 	quorumType := 2
 	rbtAmount := 1
 	smartContractToken := smartContractHash()
-	port := "20002"
+	port := "20009"
 	id := contract.DeploySmartContract(comment, deployerAddress, quorumType, rbtAmount, smartContractToken, port)
 	fmt.Println("Contract ID: " + id)
 	contract.SignatureResponse(id, port)
@@ -70,12 +70,18 @@ func ExecuteSmartContractTestNode2() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on TestNode2"
-	executorAddress := "12D3KooWBJw9Ei6L7FkSLyVX3PBfaVGRGbmBjaHaGgUNCMGTHMWp.bafybmidpuc3vcegwxjrr6xnvvwvt3txmhkjnvdgb2kbyvemilw4lptxlvm"
+	executorAddress := "bafybmidwfmwrq4mj74usaazwlb3hkhjuqj6wzxcwntvicxoxni3ge47myq"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmidpuc3vcegwxjrr6xnvvwvt3txmhkjnvdgb2kbyvemilw4lptxlvm","bid":40.01}`
+	smartContractData := `{"did":"bafybmigekvkdzwzloww336uzcckqnsqzad2h6l7oqulh5mo2zyewq5f4vy","bid":20.00}`
+
 	smartContractToken := smartContractHash()
-	port := "20003"
-	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
+	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
+	plaintex_bytes := []byte(smartContractData)
+	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	fmt.Println("encryptedsmartcontract data of node10 is ", encrypted_smartcontractdata)
+
+	port := "20010"
+	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
 
 func ExecuteSmartContractTestNode3() {
@@ -84,12 +90,17 @@ func ExecuteSmartContractTestNode3() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on TestNode3"
-	executorAddress := "12D3KooWJp7uNRG9Cv1YPkernpw53WaXTELWFBged3gqePswguDB.bafybmicothuuyezh3rffamavaghxhcvgwisg5f5dyuhz26ljtpvzueclby"
+	executorAddress := "bafybmihqj74dcyi3ipuzbpcqpxhyzxpr5viys6w3ethuzfxrfu37yzs4hu"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmicothuuyezh3rffamavaghxhcvgwisg5f5dyuhz26ljtpvzueclby","bid":50.00}`
+	smartContractData := `{"did":"bafybmid42w6c4qs6tgcxoviolynlki3to4ej23p3hbmsmzuavew4hbonna","bid":22.00}`
 	smartContractToken := smartContractHash()
-	port := "20004"
-	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
+	port := "20011"
+	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
+	plaintex_bytes := []byte(smartContractData)
+	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	fmt.Println("encryptedsmartcontract data of node11 is ", encrypted_smartcontractdata)
+
+	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
 
 func ExecuteSmartContractTestNode4() {
@@ -98,12 +109,16 @@ func ExecuteSmartContractTestNode4() {
 		port : The port corresponding to the executor node.
 	*/
 	comment := "Executing Test Smart Contract on Node3"
-	executorAddress := "12D3KooWMJ6hBM9R8uF8Lfo9QUM6YgV522DsJkeiZLTgfcQmbgrU.bafybmidlbjr35spo2wdyhonoslew22jmoagdcxklgqacho5bie4bl5ksiy"
+	executorAddress := "bafybmihsa7qc5onikjlxvguxifnh7xz7t57q4mqnopee62geheno4iia2m"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmidlbjr35spo2wdyhonoslew22jmoagdcxklgqacho5bie4bl5ksiy","bid":60.01}`
+	smartContractData := `{"did":"bafybmif4xcderso3aouqhwwdeeffhknbosd4mgtqphi6rznrtrekvdo6fq","bid":24.00}`
 	smartContractToken := smartContractHash()
-	port := "20005"
-	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
+	port := "20012"
+	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
+	plaintex_bytes := []byte(smartContractData)
+	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	fmt.Println("encryptedsmartcontract data of node12 is ", encrypted_smartcontractdata)
+	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
 
 func ExecuteSmartContractTestNode5() {
@@ -114,10 +129,14 @@ func ExecuteSmartContractTestNode5() {
 	comment := "Executing Test Smart Contract on Node3"
 	executorAddress := "12D3KooWQ8smfu9WeGqYDrZmCboSdiPyvVKMcDQoDUdZeb9eeQR1.bafybmidaqxue2u5ayicgyqpiv6yiir2qyiw6lhr3cgq7oru7ng25lupu2y"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmidaqxue2u5ayicgyqpiv6yiir2qyiw6lhr3cgq7oru7ng25lupu2y","bid":60.01}`
+	smartContractData := `{"did":"bafybmidaqxue2u5ayicgyqpiv6yiir2qyiw6lhr3cgq7oru7ng25lupu2y","bid":26.01}`
 	smartContractToken := smartContractHash()
 	port := "20006"
-	contract.ExecuteSmartContract(comment, executorAddress, quorumType, smartContractData, smartContractToken, port)
+	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
+	plaintex_bytes := []byte(smartContractData)
+	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+
+	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
 
 // This function is responsible for subscribing to a particular smart contract.
@@ -158,7 +177,7 @@ func SetDelayAndTriggerContractExecution(port string, seconds int) {
 	time.After(time.Duration(seconds))
 	contractExec, err := contractModule.NewContractExecution(contractId, port)
 	smartContractTokenData := contract.GetSmartContractData(port, contractId)
-	fmt.Println("Smart Contract Token Data :", string(smartContractTokenData))
+	fmt.Println("Smart Contract Token Data :", (smartContractTokenData))
 	var dataReply SmartContractDataReply
 
 	if err := json.Unmarshal(smartContractTokenData, &dataReply); err != nil {
@@ -180,10 +199,9 @@ func SetDelayAndTriggerContractExecution(port string, seconds int) {
 	}
 
 	// Print the JSON string
-	fmt.Println(string(jsonString))
-	contractExec.ProcessActions(actions, string(jsonString))
+	fmt.Println(jsonString)
+	contractExec.ProcessActions(actions, jsonString)
 }
-
 func main() {
 
 	for {
@@ -192,15 +210,15 @@ func main() {
 		fmt.Print("Enlighten me with the function to be executed ")
 		fmt.Println(`
 		1. Generate Contract 
-		2. Subscribe Contract TestNode1 aka Deployer Node
-		3. Subscribe Contract TestNode2 
-		4. Subscribe Contract TestNode3
-		5. Subscribe Contract TestNode4
+		2. Subscribe Contract TestNode9 aka Deployer Node
+		3. Subscribe Contract TestNode10 
+		4. Subscribe Contract TestNode11
+		5. Subscribe Contract TestNode12
 		6. Subscribe Contract TestNode5
 		7. Deploy Contract
-		8. Execute Contract TestNode2 
-		9. Execute Contract TestNode3 
-		10.Execute Contract TestNode4
+		8. Execute Contract TestNode10 
+		9. Execute Contract TestNode11
+		10.Execute Contract TestNode12
 		11.Execute Contract TestNode5
 		12.Find the Highest Bidder`)
 		input, _ := reader.ReadString('\n')
@@ -211,38 +229,38 @@ func main() {
 			fmt.Println("Generate Contract")
 			GenerateSmartContract()
 		case "2":
-			fmt.Println("Subscribing Smart Contract in TestNode1 aka Deployer Node")
-			SubscribeSmartContractTestNode2("20002")
+			fmt.Println("Subscribing Smart Contract in TestNode9 aka Deployer Node")
+			SubscribeSmartContractTestNode2("20009")
 		case "3":
-			fmt.Println("Subscribing Smart Contract in TestNode2")
-			SubscribeSmartContractTestNode2("20003")
+			fmt.Println("Subscribing Smart Contract in TestNode10")
+			SubscribeSmartContractTestNode2("20010")
 		case "4":
-			fmt.Println("Subscribing Smart Contract in TestNode3")
-			SubscribeSmartContractTestNode3("20004")
+			fmt.Println("Subscribing Smart Contract in TestNode11")
+			SubscribeSmartContractTestNode3("20011")
 		case "5":
-			fmt.Println("Subscribing Smart Contract in TestNode4")
-			SubscribeSmartContractTestNode4("20005")
+			fmt.Println("Subscribing Smart Contract in TestNode12")
+			SubscribeSmartContractTestNode4("20012")
 		case "6":
 			fmt.Println("Subscribing Smart Contract in TestNode5")
 			SubscribeSmartContractTestNode4("20006")
 		case "7":
-			fmt.Println("Deploying Smart Contract in TestNode1")
+			fmt.Println("Deploying Smart Contract in TestNode9")
 			DeploySmartContract()
 		case "8":
-			fmt.Println("Executing Smart Contract in TestNode2")
+			fmt.Println("Executing Smart Contract in TestNode10")
 			ExecuteSmartContractTestNode2()
 		case "9":
-			fmt.Println("Executing Smart Contract in TestNode3")
+			fmt.Println("Executing Smart Contract in TestNode11")
 			ExecuteSmartContractTestNode3()
 		case "10":
-			fmt.Println("Executing Smart Contract in Node 3")
+			fmt.Println("Executing Smart Contract in Node 12")
 			ExecuteSmartContractTestNode4()
 		case "11":
 			fmt.Println("Executing Smart Contract in Node 3")
 			ExecuteSmartContractTestNode5()
 		case "12":
 			fmt.Println("Bidding is Completed: Finding the highest bid")
-			SetDelayAndTriggerContractExecution("20002", 20)
+			SetDelayAndTriggerContractExecution("20009", 20)
 
 		default:
 			fmt.Println("You entered an unknown number")

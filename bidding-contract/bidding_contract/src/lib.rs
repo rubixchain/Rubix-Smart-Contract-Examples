@@ -3,16 +3,17 @@ use std::ffi::{CString, CStr};
 use std::os::raw::c_void;
 extern crate serde;
 extern crate serde_json;
-
+pub mod decrypt;
+//mod seal;
+// pub mod seal;
 #[macro_use] extern crate serde_derive;
-
 #[derive(Serialize, Deserialize, Debug)]
 struct SCTDataReply {
     BlockNo: u32,
     BlockId: String,
-    SmartContractData: String,
+    SmartContractData: Vec<u8>,
 }
-
+//test comments .....10
 #[derive(Serialize, Deserialize, Debug)]
 struct SmartContractData {
     did: String,
@@ -41,13 +42,29 @@ pub extern "C" fn alloc() -> *mut c_void {
 pub unsafe extern "C" fn dealloc(ptr: *mut c_void) {
     let _ = Vec::from_raw_parts(ptr, 0, 1024);
 }
+// fn decrypted_scdatareply(blocks: &mut [SCTDataReply]){
+//     let encrypted_privkeypath = "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pvtKey.pem";
+//     for block in blocks{
+//         let mut ciphertext = block.SmartContractData.clone().into_bytes();
+//         let mut decryptedsmartcontractdata = decrypt::decrypt_smartcontract_data(encrypted_privkeypath, ciphertext);
+//         block.SmartContractData = decryptedsmartcontractdata; 
+//     }
+// }
 
 //The smart contract logic for finding the highest bidder
-fn find_highest_bid_did(blocks: &[SCTDataReply]) -> Option<(String, f64)> {
+fn find_highest_bid_did(blocks: &mut [SCTDataReply]) -> Option<(String, f64)> {
+   
+    // for block in&mut *blocks{
+    //     let mut ciphertext = block.SmartContractData.clone().into_bytes();
+    //     let decrypted_key = [26, 74, 206, 110, 150, 148, 87, 32, 213, 102, 150, 120, 224, 105, 131, 103, 58, 95, 72, 72, 142, 240, 97, 25, 113, 39, 140, 138, 164, 82, 187, 147];
+    //     println!("cipher text of smartcontract data is {:?}",ciphertext);
+    //     let mut decryptedsmartcontractdata = decrypt::decrypt_smartcontract_data(&decrypted_key,ciphertext);
+    //     block.SmartContractData = decryptedsmartcontractdata; 
+    // }
     let mut max_bid_info: Option<(String, f64)> = None;
 
     for block in blocks {
-        if let Ok(data) = serde_json::from_str::<SmartContractData>(&block.SmartContractData) {
+        if let Ok(data) = serde_json::from_slice::<SmartContractData>(&block.SmartContractData) {
             match max_bid_info {
                 Some((_, max_bid)) if data.bid > max_bid => {
                     max_bid_info = Some((data.did.clone(), data.bid));
@@ -67,6 +84,7 @@ Here we are taking the entire tokenchain Data and is checking for the highest bi
 Then we are returning the did and the highest bid amount */
 #[no_mangle]
 pub unsafe fn bid(ptr: *mut u8) {
+   
     // Assume get_blocks() returns a valid JSON string pointer
     // For testing, we'll use the hardcoded JSON data directly
      let json_data = CStr::from_ptr(ptr as *const i8).to_str().unwrap();
@@ -92,14 +110,24 @@ pub unsafe fn bid(ptr: *mut u8) {
     // "#;
 
     // Deserialize the JSON data into a vector of SCTDataReply structs
-    let blocks: Vec<SCTDataReply> = serde_json::from_str(json_data).expect("Failed to deserialize JSON");
+    let mut  blocks: Vec<SCTDataReply> = serde_json::from_str(json_data).expect("Failed to deserialize JSON");
 
+    //let encrypted_privkeypath = "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pvtKey.pem";
+    for block in&mut *blocks{
+        let mut ciphertext = block.SmartContractData.clone();
+        let decrypted_key = [26, 74, 206, 110, 150, 148, 87, 32, 213, 102, 150, 120, 224, 105, 131, 103, 58, 95, 72, 72, 142, 240, 97, 25, 113, 39, 140, 138, 164, 82, 187, 147];
+        println!("cipher text of smartcontract data is {:?}",ciphertext);
+        let mut decryptedsmartcontractdata = decrypt::decrypt_smartcontract_data(&decrypted_key,ciphertext);
+        block.SmartContractData = decryptedsmartcontractdata; 
+    }
+    let blocks_as_bytes = blocks.as_mut_slice();
+    
     // Find the block with the highest bid
     // match find_highest_bid_did(&blocks) {
     //     Some((block_no, max_bid)) => println!("The block with the highest bid is BlockNo {} with a bid of {}", block_no, max_bid),
     //     None => println!("No valid bids found."),
     // }
-    match find_highest_bid_did(&blocks) {
+    match find_highest_bid_did(blocks_as_bytes) {
         Some((block_no, max_bid)) => {
             println!("The block with the highest bid is BlockNo {} with a bid of {}", block_no, max_bid);
             

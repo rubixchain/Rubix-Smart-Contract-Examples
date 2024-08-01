@@ -89,7 +89,7 @@ func GetSmartContractData(port string, token string) []byte {
 		fmt.Printf("Error reading response body: %s\n", err)
 	}
 	// Process the data as needed
-	fmt.Println("Response Body in get smart contract data :", string(data2))
+	fmt.Println("Response Body in get smart contract data :", data2)
 
 	return data2
 
@@ -179,7 +179,8 @@ func SignatureResponse(requestId string, port string) string {
 	return string(data2)
 }
 
-func ExecuteSmartContract(comment string, executorAddress string, quorumType int, smartContractData string, smartContractToken string, port string) {
+func ExecuteSmartContract(comment string, executorAddress string, quorumType int, smartContractData []byte, smartContractToken string, port string) {
+
 	data := map[string]interface{}{
 		"comment":            comment,
 		"executorAddr":       executorAddress,
@@ -349,7 +350,7 @@ func ReadCurrentState(stateFilePath string) string {
 }
 
 func GetRubixSmartContractPath(contractHash string, smartContractName string, nodeName string) (string, error) {
-	rubixcontractPath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/%s", nodeName, contractHash, smartContractName)
+	rubixcontractPath := fmt.Sprintf("/home/rubix/Sai-Rubix/rubixgoplatform/linux/%s/SmartContract/%s/%s", nodeName, contractHash, smartContractName)
 
 	// Check if the path exists
 	if _, err := os.Stat(rubixcontractPath); err != nil {
@@ -363,7 +364,7 @@ func GetRubixSmartContractPath(contractHash string, smartContractName string, no
 }
 
 func GetRubixSchemaPath(contractHash string, nodeName string, schemaName string) (string, error) {
-	rubixSchemaPath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/%s", nodeName, contractHash, schemaName)
+	rubixSchemaPath := fmt.Sprintf("/home/rubix/Sai-Rubix/rubixgoplatform/linux/%s/SmartContract/%s/%s", nodeName, contractHash, schemaName)
 
 	// Check if the path exists
 	if _, err := os.Stat(rubixSchemaPath); err != nil {
