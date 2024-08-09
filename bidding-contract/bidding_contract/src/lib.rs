@@ -3,7 +3,8 @@ use std::ffi::{CString, CStr};
 use std::os::raw::c_void;
 extern crate serde;
 extern crate serde_json;
-pub mod decrypt;
+//use ecies::decrypt;
+//pub mod decrypt;
 //mod seal;
 // pub mod seal;
 #[macro_use] extern crate serde_derive;
@@ -11,7 +12,7 @@ pub mod decrypt;
 struct SCTDataReply {
     BlockNo: u32,
     BlockId: String,
-    SmartContractData: Vec<u8>,
+    SmartContractData:String,
 }
 //test comments .....10
 #[derive(Serialize, Deserialize, Debug)]
@@ -52,7 +53,8 @@ pub unsafe extern "C" fn dealloc(ptr: *mut c_void) {
 // }
 
 //The smart contract logic for finding the highest bidder
-fn find_highest_bid_did(blocks: &mut [SCTDataReply]) -> Option<(String, f64)> {
+//fn find_highest_bid_did(blocks: &mut [SCTDataReply]) -> Option<(String, f64)> {
+       //let hex_str = "042e8c8c71a791fc1a3f475041f63b2cea236f446d2255ba7d85f9295ff62b4f967d5458de63fa496ab9803c4db93ede81781160d9aaf1637eb19124a96c68b96be421b8f5de7384f4e8529f0d3f41e2605c1c449bf9d8b401fcf09aa975a29a2324515607ce794ce9c9362a957e2f431f152b6e76fb3b672d9c0fdbecffb5b13dc1ec9029c56a552aabf52adb54acf44ed3f5a3a8b592e2e50581190116c2d67d924630070ce0545296f7e337fe39534442";
    
     // for block in&mut *blocks{
     //     let mut ciphertext = block.SmartContractData.clone().into_bytes();
@@ -61,10 +63,12 @@ fn find_highest_bid_did(blocks: &mut [SCTDataReply]) -> Option<(String, f64)> {
     //     let mut decryptedsmartcontractdata = decrypt::decrypt_smartcontract_data(&decrypted_key,ciphertext);
     //     block.SmartContractData = decryptedsmartcontractdata; 
     // }
+    //let mut max_bid_info: Option<(String, f64)> = None;
+fn find_highest_bid_did(blocks: &[SCTDataReply]) -> Option<(String, f64)> {
     let mut max_bid_info: Option<(String, f64)> = None;
 
     for block in blocks {
-        if let Ok(data) = serde_json::from_slice::<SmartContractData>(&block.SmartContractData) {
+        if let Ok(data) = serde_json::from_str::<SmartContractData>(&block.SmartContractData) {
             match max_bid_info {
                 Some((_, max_bid)) if data.bid > max_bid => {
                     max_bid_info = Some((data.did.clone(), data.bid));
@@ -110,24 +114,31 @@ pub unsafe fn bid(ptr: *mut u8) {
     // "#;
 
     // Deserialize the JSON data into a vector of SCTDataReply structs
-    let mut  blocks: Vec<SCTDataReply> = serde_json::from_str(json_data).expect("Failed to deserialize JSON");
+    //let mut  blocks: Vec<SCTDataReply> = serde_json::from_str(json_data).expect("Failed to deserialize JSON");
+    let blocks: Vec<SCTDataReply> = serde_json::from_str(json_data).expect("Failed to deserialize JSON");
 
     //let encrypted_privkeypath = "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pvtKey.pem";
-    for block in&mut *blocks{
-        let mut ciphertext = block.SmartContractData.clone();
-        let decrypted_key = [26, 74, 206, 110, 150, 148, 87, 32, 213, 102, 150, 120, 224, 105, 131, 103, 58, 95, 72, 72, 142, 240, 97, 25, 113, 39, 140, 138, 164, 82, 187, 147];
-        println!("cipher text of smartcontract data is {:?}",ciphertext);
-        let mut decryptedsmartcontractdata = decrypt::decrypt_smartcontract_data(&decrypted_key,ciphertext);
-        block.SmartContractData = decryptedsmartcontractdata; 
-    }
-    let blocks_as_bytes = blocks.as_mut_slice();
+    // for block in&mut *blocks{
+    //     let mut encoded_ciphertext = block.SmartContractData.clone();
+    //     if encoded_ciphertext.is_empty() {
+    //         continue;
+    //     }
+    //     let decrypted_key = [26, 74, 206, 110, 150, 148, 87, 32, 213, 102, 150, 120, 224, 105, 131, 103, 58, 95, 72, 72, 142, 240, 97, 25, 113, 39, 140, 138, 164, 82, 187, 147];
+    //     let decoded_ciphertext = hex::decode(encoded_ciphertext).expect("unable to decode ");
+    //     println!("cipher text of smartcontract data is {:?}",decoded_ciphertext);
+    //     let mut decryptedsmartcontractdata = decrypt_smartcontract_data(&decrypted_key,decoded_ciphertext);
+    //     //let mut decryptedscdata_in_string = std::str::from_utf8(decryptedsmartcontractdata).expect("unable to convert decrypted sc data into string format");
+    //     println!("decrypted text of smartcontract data is {:?}",decryptedsmartcontractdata);
+    //     block.SmartContractData = decryptedsmartcontractdata.to_string(); 
+    // }
+    // let blocks_as_bytes = blocks.as_mut_slice();
     
     // Find the block with the highest bid
     // match find_highest_bid_did(&blocks) {
     //     Some((block_no, max_bid)) => println!("The block with the highest bid is BlockNo {} with a bid of {}", block_no, max_bid),
     //     None => println!("No valid bids found."),
     // }
-    match find_highest_bid_did(blocks_as_bytes) {
+    match find_highest_bid_did(&blocks) {
         Some((block_no, max_bid)) => {
             println!("The block with the highest bid is BlockNo {} with a bid of {}", block_no, max_bid);
             

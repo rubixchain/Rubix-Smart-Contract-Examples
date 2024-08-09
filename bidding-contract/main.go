@@ -3,6 +3,7 @@ package main
 import (
 	"bidding-contract/contract"
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -26,7 +27,7 @@ type BasicResponse struct {
 type SCTDataReply struct {
 	BlockNo           uint64
 	BlockId           string
-	SmartContractData []byte
+	SmartContractData string
 }
 
 func GenerateSmartContract() {
@@ -44,7 +45,7 @@ func GenerateSmartContract() {
 
 // This function is intended to pass the smart contract hash which is retruned while generating smart contract
 func smartContractHash() string {
-	return "QmcmWCPV7AsZu1TMEtydpgLYNH5Cmf3qYxVAaF9obucrGE"
+	return "QmaCGpmpTjY184ag9mMVX4LHHqxqrBgb5p5A8cP13Rau9J"
 }
 
 func DeploySmartContract() {
@@ -63,7 +64,16 @@ func DeploySmartContract() {
 	contract.SignatureResponse(id, port)
 
 }
+func EncryptSmartcontractData(smartcontractData string, pubkeypath string) string {
+	smartcontractData_bytes := []byte(smartcontractData)
+	encryptedsmartcontractdata := (contract.Ecies_encryption(pubkeypath, smartcontractData_bytes))
+	fmt.Println("encrypted smartcontract data byes before encoding", encryptedsmartcontractdata)
+	encryptedsmartcontractdata_string := hex.EncodeToString(encryptedsmartcontractdata)
 
+	// Print the hexadecimal string
+	//fmt.Println("Hexadecimal format:", encryptedsmartcontractdata_string)
+	return encryptedsmartcontractdata_string
+}
 func ExecuteSmartContractTestNode2() {
 	/*
 		executorAddress : The peerdId.did combination of the address of the Rubix node which is execcting the contract
@@ -72,14 +82,13 @@ func ExecuteSmartContractTestNode2() {
 	comment := "Executing Test Smart Contract on TestNode2"
 	executorAddress := "bafybmidwfmwrq4mj74usaazwlb3hkhjuqj6wzxcwntvicxoxni3ge47myq"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmigekvkdzwzloww336uzcckqnsqzad2h6l7oqulh5mo2zyewq5f4vy","bid":20.00}`
-
+	smartContractData := `{"did":"bafybmidwfmwrq4mj74usaazwlb3hkhjuqj6wzxcwntvicxoxni3ge47myq","bid":20.00}`
 	smartContractToken := smartContractHash()
 	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
-	plaintex_bytes := []byte(smartContractData)
-	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	encrypted_smartcontractdata := EncryptSmartcontractData(smartContractData, pubkey_path)
+	// plaintex_bytes := []byte(smartContractData)
+	// encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
 	fmt.Println("encryptedsmartcontract data of node10 is ", encrypted_smartcontractdata)
-
 	port := "20010"
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
@@ -92,12 +101,13 @@ func ExecuteSmartContractTestNode3() {
 	comment := "Executing Test Smart Contract on TestNode3"
 	executorAddress := "bafybmihqj74dcyi3ipuzbpcqpxhyzxpr5viys6w3ethuzfxrfu37yzs4hu"
 	quorumType := 2
-	smartContractData := `{"did":"bafybmid42w6c4qs6tgcxoviolynlki3to4ej23p3hbmsmzuavew4hbonna","bid":22.00}`
+	smartContractData := `{"did":"bafybmihqj74dcyi3ipuzbpcqpxhyzxpr5viys6w3ethuzfxrfu37yzs4hu","bid":22.00}`
 	smartContractToken := smartContractHash()
 	port := "20011"
 	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
-	plaintex_bytes := []byte(smartContractData)
-	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	// plaintex_bytes := []byte(smartContractData)
+	// encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	encrypted_smartcontractdata := EncryptSmartcontractData(smartContractData, pubkey_path)
 	fmt.Println("encryptedsmartcontract data of node11 is ", encrypted_smartcontractdata)
 
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
@@ -115,8 +125,9 @@ func ExecuteSmartContractTestNode4() {
 	smartContractToken := smartContractHash()
 	port := "20012"
 	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
-	plaintex_bytes := []byte(smartContractData)
-	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	// plaintex_bytes := []byte(smartContractData)
+	// encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	encrypted_smartcontractdata := EncryptSmartcontractData(smartContractData, pubkey_path)
 	fmt.Println("encryptedsmartcontract data of node12 is ", encrypted_smartcontractdata)
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
@@ -133,8 +144,9 @@ func ExecuteSmartContractTestNode5() {
 	smartContractToken := smartContractHash()
 	port := "20006"
 	pubkey_path := "/home/rubix/Sai-Rubix/rubixgoplatform/linux/node9/Rubix/TestNetDID/bafybmiahqapy3fvpqn4feoawdotnewu3zh4cpne54uivaceb2bpd2ihnja/pubKey.pem"
-	plaintex_bytes := []byte(smartContractData)
-	encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	// plaintex_bytes := []byte(smartContractData)
+	// encrypted_smartcontractdata := (contract.Ecies_encryption(pubkey_path, plaintex_bytes))
+	encrypted_smartcontractdata := EncryptSmartcontractData(smartContractData, pubkey_path)
 
 	contract.ExecuteSmartContract(comment, executorAddress, quorumType, encrypted_smartcontractdata, smartContractToken, port)
 }
@@ -176,6 +188,10 @@ func SetDelayAndTriggerContractExecution(port string, seconds int) {
 	fmt.Printf("Setting a delay of %d seconds before triggering ContractExecution...\n", seconds)
 	time.After(time.Duration(seconds))
 	contractExec, err := contractModule.NewContractExecution(contractId, port)
+	if err != nil {
+		fmt.Println("new contract execution failed,err: ", err)
+		// return
+	}
 	smartContractTokenData := contract.GetSmartContractData(port, contractId)
 	fmt.Println("Smart Contract Token Data :", (smartContractTokenData))
 	var dataReply SmartContractDataReply
@@ -185,12 +201,25 @@ func SetDelayAndTriggerContractExecution(port string, seconds int) {
 		return
 	}
 	fmt.Println("Data reply in RunSmartContract", dataReply)
+	//Decrypting Sct data
+	privatekeyBytes := []byte{26, 74, 206, 110, 150, 148, 87, 32, 213, 102, 150, 120, 224, 105, 131, 103, 58, 95, 72, 72, 142, 240, 97, 25, 113, 39, 140, 138, 164, 82, 187, 147}
+
+	decryptedSCTDataReply := dataReply.SCTDataReply
+	for i, reply := range decryptedSCTDataReply {
+		encryptedsmartcontractdata_byes, err := hex.DecodeString(reply.SmartContractData)
+		if err != nil {
+			fmt.Println("unable to decode", err)
+		}
+		reply.SmartContractData = contractModule.Ecies_decryption(privatekeyBytes, encryptedsmartcontractdata_byes)
+		fmt.Println("Decrypted smartcontract data look at it:", reply.SmartContractData)
+		decryptedSCTDataReply[i] = reply
+	}
 	action := contractModule.Action{
 		Function: "bid",
 		Args:     []interface{}{""},
 	}
 	actions := []contractModule.Action{action}
-	smartContractData := dataReply.SCTDataReply
+	smartContractData := decryptedSCTDataReply
 	fmt.Println("Smart Contract Data :", smartContractData)
 	jsonString, err := json.Marshal(smartContractData)
 	if err != nil {
@@ -199,7 +228,7 @@ func SetDelayAndTriggerContractExecution(port string, seconds int) {
 	}
 
 	// Print the JSON string
-	fmt.Println(jsonString)
+	fmt.Println("sct data in json str:", jsonString)
 	contractExec.ProcessActions(actions, jsonString)
 }
 func main() {

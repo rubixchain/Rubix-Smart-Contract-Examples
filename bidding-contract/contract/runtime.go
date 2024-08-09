@@ -84,12 +84,14 @@ func GetSmartContractData(port string, token string) []byte {
 		fmt.Println("Error sending HTTP request:", err)
 	}
 	fmt.Println("Response Status:", resp.Status)
+
 	data2, err := io.ReadAll(resp.Body)
 	if err != nil {
 		fmt.Printf("Error reading response body: %s\n", err)
 	}
-	// Process the data as needed
-	fmt.Println("Response Body in get smart contract data :", data2)
+	// Process the data as neededwasm-objdump -x your_wasm_file.wasm
+
+	fmt.Println("Response Body in get smart contract data :", string(data2))
 
 	return data2
 
@@ -179,7 +181,7 @@ func SignatureResponse(requestId string, port string) string {
 	return string(data2)
 }
 
-func ExecuteSmartContract(comment string, executorAddress string, quorumType int, smartContractData []byte, smartContractToken string, port string) {
+func ExecuteSmartContract(comment string, executorAddress string, quorumType int, smartContractData string, smartContractToken string, port string) {
 
 	data := map[string]interface{}{
 		"comment":            comment,

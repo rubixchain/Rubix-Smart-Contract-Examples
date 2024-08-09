@@ -49,23 +49,45 @@ func NewContractExecution(contractId string, port string) (*ContractExecution, e
 	fmt.Println("ContractExecution:", c)
 	wasmBytes, err := os.ReadFile(c.wasmPath)
 	if err != nil {
+		fmt.Println("failed to read wasm path,err:", err)
 		return nil, err
 	}
-
 	c.store = wasm.NewStore(wasm.NewEngine())
+	if c.store == nil {
+		fmt.Println("not able to create a new store")
+	}
+	fmt.Println("c.store", c.store.Engine, c.store)
+	// wasm1, err := wasm.Wat2Wasm(`
+	// 	(module
+	//     (import "__wbindgen_placeholder__" "__wbindgen_describe" (func $_ZN12wasm_bindgen19__wbindgen_describe17hdb4530e20704bb46E (type $t0)))
+	// 	(import "__wbindgen_placeholder__" "__wbindgen_throw" (func $_ZN12wasm_bindgen16__wbindgen_throw17he65f6939c6dd1424E (type $t12)))
+	//     (import "__wbindgen_externref_xform__" "__wbindgen_externref_table_grow" (func $_ZN12wasm_bindgen9externref31__wbindgen_externref_table_grow17hdf1c42fb5204abd7E (type $t1)))
+	//     (import "__wbindgen_externref_xform__" "__wbindgen_externref_table_set_null" (func $_ZN12wasm_bindgen9externref35__wbindgen_externref_table_set_null17hd70d97eee4521284E (type $t0)))
+	// 	(func (export "run")
+	// 	(call $_ZN12wasm_bindgen19__wbindgen_describe17hdb4530e20704bb46E)
+	// 	(call $_ZN12wasm_bindgen16__wbindgen_throw17he65f6939c6dd1424E)
+	// 	(call $_ZN12wasm_bindgen9externref31__wbindgen_externref_table_grow17hdf1c42fb5204abd7E)
+	// 	(call $_ZN12wasm_bindgen9externref35__wbindgen_externref_table_set_null17hd70d97eee4521284E)
+	// 	)
+	//   `)
+
 	module, err := wasm.NewModule(c.store.Engine, wasmBytes)
 	if err != nil {
+		fmt.Println("failed to compile new wasm module,err:", err)
 		return nil, err
 	}
+	//item := wasm.WrapFunc(c.store, )
 
 	instance, err := wasm.NewInstance(c.store, module, nil)
 	if err != nil {
+		fmt.Println("failed to instantiate wasm module,err:", err)
 		return nil, err
 	}
 
 	allocFn := instance.GetExport(c.store, "alloc").Func()
 	address, err := allocFn.Call(c.store)
 	if err != nil {
+		fmt.Println("failed to alloc wasm mem,err:", err)
 		return nil, err
 	}
 
