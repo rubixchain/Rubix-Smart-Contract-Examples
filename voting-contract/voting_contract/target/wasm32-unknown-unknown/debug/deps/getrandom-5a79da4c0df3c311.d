@@ -1,0 +1,10 @@
+/mnt/d/PATCH/tmp/rubixgoplatform/sc/Rubix-Smart-Contract-Examples/voting-contract/voting_contract/target/wasm32-unknown-unknown/debug/deps/libgetrandom-5a79da4c0df3c311.rmeta: /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/lib.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/error.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/util.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/js.rs
+
+/mnt/d/PATCH/tmp/rubixgoplatform/sc/Rubix-Smart-Contract-Examples/voting-contract/voting_contract/target/wasm32-unknown-unknown/debug/deps/libgetrandom-5a79da4c0df3c311.rlib: /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/lib.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/error.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/util.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/js.rs
+
+/mnt/d/PATCH/tmp/rubixgoplatform/sc/Rubix-Smart-Contract-Examples/voting-contract/voting_contract/target/wasm32-unknown-unknown/debug/deps/getrandom-5a79da4c0df3c311.d: /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/lib.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/error.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/util.rs /home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/js.rs
+
+/home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/lib.rs:
+/home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/error.rs:
+/home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/util.rs:
+/home/arnab/.cargo/registry/src/index.crates.io-6f17d22bba15001f/getrandom-0.2.10/src/js.rs:
