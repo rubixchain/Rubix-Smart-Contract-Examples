@@ -214,9 +214,8 @@ func (r *WasmtimeRuntime) dumpOutput(pointer int32, red int32, blue int32, block
 	fmt.Println("The port is :", port)
 	// smartContractHash := string(r.output[port_length : p])
 	fmt.Println("Smart Contract Hash in Dump Output :", smartContracthash)
-	nodeName := os.Getenv(port)
-	stateFilePath := fmt.Sprintf("/home/allen/Rubix-Wasm_test/%s/SmartContract/%s/schemaCodeFile.json", nodeName, smartContracthash)
-
+	stateFilePath := "store_state/vote_contract/votefile.json"
+	
 	count := Count{}
 	count.Red = int32(red)
 	count.Blue = int32(blue)

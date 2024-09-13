@@ -69,8 +69,8 @@ func ContractInputHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	port := req.Port
-	folderPath := "../voting_contract/target/wasm32-unknown-unknown/debug/voting_contract.wasm"
-	stateFilePath := "../store_state/vote_contract/votefile.json"
+	folderPath := "voting_contract/target/wasm32-unknown-unknown/debug/voting_contract.wasm"
+	stateFilePath := "store_state/vote_contract/votefile.json"
 
 	fmt.Println(folderPath)
 	_, err1 := os.Stat(folderPath)

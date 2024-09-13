@@ -6,7 +6,7 @@ extern "C" {
 
 #[no_mangle]
 pub extern "C" fn handler(input_vote_length: usize , red_length: usize , blue_length: usize, port_length: usize, hash_length: usize, block_no_length: usize ) {
-    // load input data
+    // load input data.....
     let mut input = Vec::with_capacity(input_vote_length + red_length + blue_length + port_length + hash_length + block_no_length);
     let mut output_vec:Vec<u8> = Vec::new();
     unsafe {
