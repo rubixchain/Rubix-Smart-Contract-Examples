@@ -5,7 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
+
+	// "io/ioutil"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -25,24 +26,19 @@ type ContractExecution struct {
 	store           *wasm.Store
 	memory          *wasm.Memory
 
-	datalen int
-	data    []byte
+	data []byte
 }
 
 type Action struct {
 	Function string        `json:"function"`
 	Args     []interface{} `json:"args"`
 }
-type rbtTransdata struct {
-	Sender     string
-	Receiver   string
-	TokenCount float64
-	Comment    string
-	Type       int
-	Password   string
-	port       string
-}
 
+type CreateDidData1 struct {
+	Type    int
+	PrivPWD string
+	ImgFile string
+}
 type CreateDidData struct {
 	Type              int    `json:"type"`
 	Dir               string `json:"dir"`
@@ -102,19 +98,14 @@ func NewContractExecution(contractId string, port string) (*ContractExecution, e
 	}
 	fmt.Println("c.store", c.store.Engine, c.store)
 
-	linker.FuncWrap("env", "rbt_transfer", c.initiateRbtTransfer)
 	linker.FuncWrap("env", "create_did", c.initiatecreateDid2)
-	// linker.FuncWrap("env", "load_input", c.loadInput)
-	// linker.FuncWrap("env", "Addition", c.sum)
-	// linker.FuncWrap("env", "Dumpoutput", c.dumpOutput)
+
 	module, err := wasm.NewModule(c.store.Engine, wasmBytes)
 	if err != nil {
 		fmt.Println("failed to compile new wasm module,err:", err)
 		return nil, err
 	}
-
 	instance, err := linker.Instantiate(c.store, module)
-	// instance, err := wasm.NewInstance(c.store, module, nil)
 	if err != nil {
 		fmt.Println("failed to instantiate wasm module,err:", err)
 		return nil, err
@@ -131,7 +122,6 @@ func NewContractExecution(contractId string, port string) (*ContractExecution, e
 	c.memory = instance.GetExport(c.store, "memory").Memory()
 	c.initialised = true
 	fmt.Println("Pointer:", c.pointerPosition)
-	//c.apply_state()
 
 	return c, nil
 }
@@ -158,56 +148,6 @@ func (c *ContractExecution) write(str string) int {
 	return ptr
 }
 
-func (c *ContractExecution) readAtCurrentPointer() string {
-	if !c.initialised {
-		panic("Contract not initialised")
-	}
-
-	pointer := c.pointerPosition
-	fmt.Println("Pointer position in readAtCurrentPointer function", pointer)
-	view := c.memory.UnsafeData(c.store)[pointer:]
-	length := 0
-	for _, byte := range view {
-		if byte == 0 {
-			break
-		}
-		length++
-	}
-	fmt.Println("length in readAtCurrentPointer function:", length)
-	str := string(view[:length])
-	c.pointerPosition += length + 1
-	return str
-}
-
-func (c *ContractExecution) ReadStateFile() string {
-	if !c.initialised {
-		panic("Contract not initialised")
-	}
-
-	file, err := os.ReadFile(c.stateFile)
-	if err != nil {
-		if os.IsNotExist(err) {
-			return ""
-		}
-
-		panic(err)
-	}
-
-	return string(file)
-}
-
-// func (c *ContractExecution) apply_state() {
-// 	if !c.initialised {
-// 		panic("Contract not initialised")
-// 	}
-
-// 	state := c.ReadStateFile()
-// 	if state != "" {
-// 		pointer := c.write(state)
-// 		c.instance.GetExport(c.store, "apply_state").Func().Call(c.store, pointer)
-// 	}
-// }
-
 func (c *ContractExecution) ProcessActions(actions []Action, jsonStr string) {
 	if !c.initialised {
 		panic("Contract not initialised")
@@ -228,163 +168,10 @@ func (c *ContractExecution) ProcessActions(actions []Action, jsonStr string) {
 		functionRef.Func().Call(c.store, pointers...)
 	}
 
-	c.save_state()
-}
-
-func (c *ContractExecution) save_state() {
-	if !c.initialised {
-		panic("Contract not initialised")
-	}
-	fmt.Println("Save State function Called ")
-	fmt.Println("pointer position in save_state function is:", c.pointerPosition)
-	c.instance.GetExport(c.store, "get_state").Func().Call(c.store, c.pointerPosition)
-	fmt.Println("pointer position in save_state function after get state function gets called is:", c.pointerPosition)
-
-	state := c.readAtCurrentPointer()
-	fmt.Println("State ", state)
-	err := ioutil.WriteFile(c.stateFile, []byte(state), 0o644)
-	if err != nil {
-		panic(err)
-	}
-	fmt.Println("Save State function Called ")
-}
-func (c *ContractExecution) initiateRbtTransfer() {
-	data := rbtTransdata{
-		Sender:     "bafybmihsa7qc5onikjlxvguxifnh7xz7t57q4mqnopee62geheno4iia2m",
-		Receiver:   "bafybmibpgv4fe4xr7wwolrymxfphe7o45r4mynnzam6ohqqzvh3usmue2e",
-		TokenCount: 1.0,
-		Comment:    "Payment for services",
-		Type:       2,
-		Password:   "mypassword",
-		port:       "20012",
-	}
-	// rbtJSON,err := json.Marshal(data)
-	// if err != nil {
-	// 	fmt.Println("error in marshaling JSON:", err)
-	// 	return
-	// }
-	rbtTransfer(data.Sender, data.Receiver, data.TokenCount, data.Comment, data.Type, data.Password, data.port)
-	// c.rbtdata = rbtJSON
-	// copy(c.memory.UnsafeData(c.store)[pointer:pointer+int32(len(c.rbtdata))], c.rbtdata)
-
-}
-func rbtTransfer(Sender string, Receiver string, TokenCount float64, Comment string, Type int, Password string, port string) {
-	data := map[string]interface{}{
-		"receiver":   Receiver,
-		"sender":     Sender,
-		"tokenCOunt": TokenCount,
-		"comment":    Comment,
-		"type":       Type,
-		"password":   Password,
-	}
-	bodyJSON, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println("error in marshaling JSON:", err)
-		return
-	}
-	url := fmt.Sprintf("http://localhost:%s/api/initiate-rbt-transfer", port)
-	// "/api/initiate-rbt-transfer"
-	req, err := http.NewRequest("POST", url, bytes.NewBuffer(bodyJSON))
-	if err != nil {
-		fmt.Println("Error creating HTTP request:", err)
-		return
-	}
-	req.Header.Set("Content-Type", "application/json; charset=UTF-8")
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		fmt.Println("Error sending HTTP request:", err)
-		return
-	}
-	fmt.Println("Response Status:", resp.Status)
-	data2, err := io.ReadAll(resp.Body)
-	if err != nil {
-		fmt.Printf("Error reading response body: %s\n", err)
-		return
-	}
-	// Process the data as needed
-	fmt.Println("Response Body in rbtTransfer :", string(data2))
-	var response map[string]interface{}
-	err3 := json.Unmarshal(data2, &response)
-	if err3 != nil {
-		fmt.Println("Error unmarshaling response:", err3)
-	}
-
-	result := response["result"].(map[string]interface{})
-	id := result["id"].(string)
-	SignatureResponse(id, port)
-
-	defer resp.Body.Close()
-}
-
-//	    Type              int    `json:"type"`
-//		Dir               string `json:"dir"`
-//		Config            string `json:"config"`
-//		RootDID           bool   `json:"root_did"`
-//		MasterDID         string `json:"master_did"`
-//		Secret            string `json:"secret"`
-//		PrivPWD           string `json:"priv_pwd"`
-//		QuorumPWD         string `json:"quorum_pwd"`
-//		ImgFile           string `json:"img_file"`
-//		DIDImgFileName    string `json:"did_img_file"`
-//		PubImgFile        string `json:"pub_img_file"`
-//		PrivImgFile       string `json:"priv_img_file"`
-//		PubKeyFile        string `json:"pub_key_file"`
-//		PrivKeyFile       string `json:"priv_key_file"`
-//		QuorumPubKeyFile  string `json:"quorum_pub_key_file"`
-//		QuorumPrivKeyFile string `json:"quorum_priv_key_file"`
-//		MnemonicFile      string `json:"mnemonic_file"`
-//		ChildPath         int    `json:"childPath"`
-//	}
-
-func (c *ContractExecution) initiatecreateDid(pointer int32) {
-
-	data := CreateDidData{
-		Type: 0,
-		Dir:  "",
-		// Config
-		// RootDID
-		// MasterDID
-		// Secret
-		PrivPWD: "mypassword",
-		// QuorumPWD:      "mypassword",
-		ImgFile:        "/home/rubix/Sai-Rubix/rubixgoplatform/linux/image.png",
-		DIDImgFileName: "",
-		// PubImgFile:     "",
-		// PrivImgFile
-		// PubKeyFile: "",
-		// PrivKeyFile
-		// QuorumPubKeyFile
-		// QuorumPrivKeyFile
-		// MnemonicFile
-		// ChildPath
-	}
-	marshalData, err := json.Marshal(data)
-	if err != nil {
-		fmt.Println("error in marshaling JSON:", err)
-		return
-	}
-	copy(c.memory.UnsafeData(c.store)[pointer:pointer+int32(len(marshalData))], marshalData)
-	c.datalen = len(marshalData)
-	fmt.Println("data length is:", c.datalen)
-	view := c.memory.UnsafeData(c.store)[pointer:]
-	length := 0
-	for _, byte := range view {
-		if byte == 0 {
-			break
-		}
-		length++
-	}
-	fmt.Println("length in readAtCurrentPointer function:", length)
-	str := string(view[:length])
-	fmt.Println("data in initiatecreateDid function is:", str)
-	// c.rbtdata = rbtJSON
-	// copy(c.memory.UnsafeData(c.store)[pointer:pointer+int32(len(c.rbtdata))], c.rbtdata)
-
+	// c.save_state()
 }
 func (c *ContractExecution) initiatecreateDid2(pointer int32) {
-	c.initiatecreateDid(pointer)
+	// c.initiatecreateDid(pointer)
 	// copy(c.data, c.memory.UnsafeData(c.store)[pointer:pointer+int32(c.datalen)])
 	view := c.memory.UnsafeData(c.store)[pointer:]
 	length := 0
@@ -399,33 +186,36 @@ func (c *ContractExecution) initiatecreateDid2(pointer int32) {
 	c.data = view[:length]
 	fmt.Println("data in initiatecreateDid2 function is:", str)
 	fmt.Println("data in initiatecreateDid2 is: ", string(c.data))
-	var response CreateDidData
-	err3 := json.Unmarshal(c.data, &response)
+	var response1 CreateDidData1
+	err3 := json.Unmarshal(c.data, &response1)
 	if err3 != nil {
 		fmt.Println("Error unmarshaling response in initiatecreateDid2:", err3)
 	}
+	fmt.Println("Unmarshalled data in initiatecreateDid2 func is:", response1)
+	var response CreateDidData
+	response.Type = response1.Type
+	response.PrivPWD = response1.PrivPWD
+	response.ImgFile = response1.ImgFile
 	port := "20009"
 	createDid(response, port)
 
 }
 
-// func createDid(Type int,Dir string,Config string,RootDID bool,MasterDID string,Secret string,PrivPWD string,QuorumPWD string,ImgFile string,DIDImgFileName string,PubImgFile string,PrivImgFile string,PubKeyFile string,PrivKeyFile string,QuorumPubKeyFile string,QuorumPrivKeyFile string,MnemonicFile string,ChildPath int){
-// func createDid(Type int, Dir string, PrivPWD string, QuorumPWD string, ImgFile string, DIDImgFileName string, PubImgFile string, PubKeyFile string, port string) {
 func createDid(data CreateDidData, port string) {
 	// Create a buffer to hold the multipart form data
 	var requestBody bytes.Buffer
 
 	// Create a new multipart writer
 	writer := multipart.NewWriter(&requestBody)
-
+	fmt.Println("Printing the data in CreateDid function", data)
 	// Add form fields
 	writer.WriteField("type", fmt.Sprintf("%d", data.Type))
-	writer.WriteField("dir", data.Dir)
+	// writer.WriteField("dir", data.Dir)
 	writer.WriteField("priv_pwd", data.PrivPWD)
 	// writer.WriteField("quorum_pwd", QuorumPWD)
-	writer.WriteField("did_img_file", data.DIDImgFileName)
-	writer.WriteField("pub_img_file", data.PubImgFile)
-
+	// writer.WriteField("did_img_file", data.DIDImgFileName)
+	// writer.WriteField("pub_img_file", data.PubImgFile)
+	writer.WriteField("image_file", data.ImgFile)
 	// Add the image file to the form
 	fmt.Println("Image file name is:", data.ImgFile)
 	file, err := os.Open(data.ImgFile)
