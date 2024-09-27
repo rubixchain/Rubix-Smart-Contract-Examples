@@ -1,15 +1,18 @@
+// wasm_module.go
+
 package wasm_go
 
 import (
-	"encoding/binary"
-	"encoding/json"
-	"errors"
-	"fmt"
-	"io/ioutil"
+    "encoding/binary"
+    "encoding/json"
+    "errors"
+    "fmt"
+    "io/ioutil"
 
-	"github.com/bytecodealliance/wasmtime-go"
+    "github.com/bytecodealliance/wasmtime-go"
 )
 
+// WasmModule encapsulates the WASM module and its associated functions.
 type WasmModule struct {
     engine      *wasmtime.Engine
     store       *wasmtime.Store
@@ -19,6 +22,7 @@ type WasmModule struct {
     deallocFunc *wasmtime.Func
 }
 
+// NewWasmModule initializes and returns a new WasmModule.
 func NewWasmModule(wasmPath string) (*WasmModule, error) {
     // Read the WASM file
     wasmBytes, err := ioutil.ReadFile(wasmPath)
@@ -65,6 +69,7 @@ func NewWasmModule(wasmPath string) (*WasmModule, error) {
     }, nil
 }
 
+// allocate allocates memory in WASM and copies the data.
 func (w *WasmModule) allocate(data []byte) (int32, error) {
     size := len(data)
     result, err := w.allocFunc.Call(w.store, size)
@@ -77,83 +82,115 @@ func (w *WasmModule) allocate(data []byte) (int32, error) {
     return ptr, nil
 }
 
+// deallocate frees memory in WASM.
 func (w *WasmModule) deallocate(ptr int32, size int32) error {
     _, err := w.deallocFunc.Call(w.store, ptr, size)
     return err
 }
 
-func (w *WasmModule) CallFunction(funcName string, input interface{}, output interface{}) error {
-    // Serialize input data
-    inputData, err := json.Marshal(input)
+// CallFunction accepts a JSON string in the format:
+// {"function_name": { ... input struct ... }}
+// It invokes the corresponding WASM function and returns the output as interface{}.
+func (w *WasmModule) CallFunction(args string) (interface{}, error) {
+    // Parse the JSON string
+    var inputMap map[string]interface{}
+    err := json.Unmarshal([]byte(args), &inputMap)
     if err != nil {
-        return err
+        return nil, fmt.Errorf("failed to parse input JSON: %v", err)
     }
 
-    // Allocate input data in WASM memory
-    inputPtr, err := w.allocate(inputData)
-    if err != nil {
-        return err
+    if len(inputMap) != 1 {
+        return nil, errors.New("input JSON must contain exactly one function")
     }
-    defer w.deallocate(inputPtr, int32(len(inputData)))
 
-    suffixedFuncName := funcName + "_wrapper"
-    
+    // Extract function name and input struct
+    var funcName string
+    var inputStruct interface{}
+    for key, value := range inputMap {
+        funcName = key
+        inputStruct = value
+    }
+
+    // Append '_wrapper' suffix to get the actual function name
+    wrapperFuncName := funcName + "_wrapper"
+
+    // Serialize the input struct to JSON
+    inputJSON, err := json.Marshal(inputStruct)
+    if err != nil {
+        return nil, fmt.Errorf("failed to serialize input struct: %v", err)
+    }
+
+    // Allocate memory for input data
+    inputPtr, err := w.allocate(inputJSON)
+    if err != nil {
+        return nil, fmt.Errorf("failed to allocate memory for input data: %v", err)
+    }
+    defer w.deallocate(inputPtr, int32(len(inputJSON)))
+
     // Prepare pointers for output data
-    outputPtrPtr, err := w.allocate(make([]byte, 4))
+    outputPtrPtr, err := w.allocate(make([]byte, 4)) // 4 bytes for pointer
     if err != nil {
-        return err
+        return nil, fmt.Errorf("failed to allocate memory for output_ptr_ptr: %v", err)
     }
     defer w.deallocate(outputPtrPtr, 4)
 
-    outputLenPtr, err := w.allocate(make([]byte, 8))
+    outputLenPtr, err := w.allocate(make([]byte, 8)) // 8 bytes for length
     if err != nil {
-        return err
+        return nil, fmt.Errorf("failed to allocate memory for output_len_ptr: %v", err)
     }
     defer w.deallocate(outputLenPtr, 8)
 
-    // Retrieve the function
-    functionExternObj := w.instance.GetExport(w.store, suffixedFuncName)
-    if functionExternObj == nil {
-        return fmt.Errorf("function %v does not exists in the contract", funcName)
-    }
-
-    function := w.instance.GetExport(w.store, suffixedFuncName).Func()
+    // Retrieve the wrapper function
+    function := w.instance.GetExport(w.store, wrapperFuncName).Func()
     if function == nil {
-        return errors.New("failed to find function export")
+        return nil, fmt.Errorf("function %s does not exist in the contract", funcName)
     }
 
-    // Call the function
-    ret, err := function.Call(w.store, inputPtr, len(inputData), outputPtrPtr, outputLenPtr)
+    // Call the wrapper function
+    ret, err := function.Call(w.store, inputPtr, len(inputJSON), outputPtrPtr, outputLenPtr)
     if err != nil {
-        return err
+        return nil, fmt.Errorf("error calling WASM function: %v", err)
     }
 
     // Check return code
-    retCode := ret.(int32)
+    retCode, ok := ret.(int32)
+    if !ok {
+        return nil, errors.New("unexpected return type from WASM function")
+    }
     if retCode != 0 {
-        return errors.New("function returned an error")
+        return nil, errors.New("WASM function returned an error")
     }
 
-    // Read output pointers
+    // Read output_ptr_ptr and output_len_ptr
     memoryData := w.memory.UnsafeData(w.store)
+    if len(memoryData) < int(outputPtrPtr)+4 || len(memoryData) < int(outputLenPtr)+8 {
+        return nil, errors.New("invalid memory access for output pointers")
+    }
+
     outputPtr := int32(binary.LittleEndian.Uint32(memoryData[outputPtrPtr:]))
     outputLen := int32(binary.LittleEndian.Uint64(memoryData[outputLenPtr:]))
+
+    // Validate memory bounds
+    if outputPtr < 0 || outputPtr+outputLen > int32(len(memoryData)) {
+        return nil, errors.New("output data exceeds memory bounds")
+    }
 
     // Read output data
     outputData := make([]byte, outputLen)
     copy(outputData, memoryData[outputPtr:outputPtr+outputLen])
 
     // Deserialize output data
-    err = json.Unmarshal(outputData, output)
+    var output interface{}
+    err = json.Unmarshal(outputData, &output)
     if err != nil {
-        return err
+        return nil, fmt.Errorf("failed to deserialize output data: %v", err)
     }
 
     // Deallocate output data
     err = w.deallocate(outputPtr, outputLen)
     if err != nil {
-        return err
+        return nil, fmt.Errorf("failed to deallocate output data: %v", err)
     }
 
-    return nil
+    return output, nil
 }

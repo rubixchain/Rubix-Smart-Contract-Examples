@@ -1,3 +1,5 @@
+// main.go
+
 package main
 
 import (
@@ -7,11 +9,6 @@ import (
     "wasm_go"
 )
 
-type AddThreeNumsReq struct {
-    A uint32 `json:"a"`
-    B uint32 `json:"b"`
-    C uint32 `json:"c"`
-}
 
 func main() {
     // Initialize the WASM module
@@ -20,21 +17,20 @@ func main() {
         log.Fatalf("Failed to initialize WASM module: %v", err)
     }
 
-    // Prepare input data
-    input := AddThreeNumsReq{
-        A: 10,
-        B: 20,
-        C: 30,
-    }
-
-    // Prepare a variable to receive the output
-    var result string
+    // Prepare input data as a JSON string
+    args := `{"concatenate_strings": {"a": "Arnab", "b": "Ghose"}}`
 
     // Call the function
-    err = wasmModule.CallFunction("add_three_nums", input, &result)
+    result, err := wasmModule.CallFunction(args)
     if err != nil {
         log.Fatalf("Function call failed: %v", err)
     }
 
-    fmt.Printf("Result: %s\n", result) // Expected output: "60"
+    // Type assertion based on expected output type
+    sum, ok := result.(string)
+    if !ok {
+        log.Fatalf("Expected string result, got %T", result)
+    }
+
+    fmt.Printf("Result: %s\n", sum) // Expected output: "60"
 }
