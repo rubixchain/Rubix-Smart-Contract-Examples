@@ -17,20 +17,34 @@ func main() {
         log.Fatalf("Failed to initialize WASM module: %v", err)
     }
 
-    // Prepare input data as a JSON string
-    args := `{"concatenate_strings": {"a": "Arnab", "b": "Ghose"}}`
+    // Prepare input data as a JSON string (input from Smart Contract State)
+    smartContractData_Block_2 := `{"concatenate_strings": {"a": "Arnab", "b": "Ghose"}}`
+    smartContractData_Block_3 := `{"add_three_nums": {"a": 1, "b": 2, "c": 3}}`
 
     // Call the function
-    result, err := wasmModule.CallFunction(args)
+    contractInput1Result, err := wasmModule.CallFunction(smartContractData_Block_2)
     if err != nil {
-        log.Fatalf("Function call failed: %v", err)
+        log.Fatalf("Function call for concatenate_strings failed: %v", err)
     }
 
-    // Type assertion based on expected output type
-    sum, ok := result.(string)
+    contractInput2Result, err := wasmModule.CallFunction(smartContractData_Block_3)
+    if err != nil {
+        log.Fatalf("Function call for add_three_nums failed: %v", err)
+    }
+
+    concatResult, ok := contractInput1Result.(string)
     if !ok {
-        log.Fatalf("Expected string result, got %T", result)
+        log.Fatalf("Expected string result, got %T", contractInput1Result)
     }
 
-    fmt.Printf("Result: %s\n", sum) // Expected output: "60"
+    fmt.Printf("concatenate_strings Result: %s\n", concatResult) // Expected output: "60"
+
+    sum, ok := contractInput2Result.(string)
+    if !ok {
+        log.Fatalf("Expected string result, got %T", contractInput2Result)
+    }
+
+    fmt.Printf("add_three_nums Result: %s\n", sum) // Expected output: "60"
+
+    
 }
