@@ -1,0 +1,1 @@
+/home/rubix/Sai-Rubix/Rubix-Smart-Contract-Examples/Allencontracts/Rubix-Smart-Contract-Examples/bidding-contract-createdidapi/createdid_contract/target/wasm32-unknown-unknown/debug/libcreatedid_contract.rlib: /home/rubix/Sai-Rubix/Rubix-Smart-Contract-Examples/Allencontracts/Rubix-Smart-Contract-Examples/bidding-contract-createdidapi/createdid_contract/src/lib.rs
