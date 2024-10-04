@@ -34,3 +34,5 @@ POST: /get-bids | It returns the content of its state JSON file (also utilised i
 ```
 
 In `bidding_contract/dapp/server/handler.go`, we are calling the `checkIfDIDIsWhitelisted` function inside the `runBiddingContractHandle` handler function, which is basically calling the `/get-whitelisted-dids` API to get the list of whitelisted DIDs. We then check if our input DID (to Bidding contract) is present in on the list or not? If yes, then we proceed with the WASM file execution, else we throw an error from DApp's end.
+
+It should be noted that the state fetch happens on the DApp side (Golang), rather than from within the WASM binary.
