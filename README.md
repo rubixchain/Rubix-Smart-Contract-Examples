@@ -1,3 +1,8 @@
+## This repository has been archived. Please refer [Rubix Wasm](https://github.com/rubixchain/rubix-wasm) for updated information on Rubix Smart Contracts.
+
+
+---
+
 **Rubix Smart Contracts**
 
 Smart contracts represent sophisticated business logic encapsulated in machine-readable formats, through programming languages. These contracts are executed within a network’s nodes, operating in a deterministic, sandboxed environment.
